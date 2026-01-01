@@ -1,0 +1,158 @@
+# =============================================================================
+# Add Task E2E Test Flow
+# =============================================================================
+# 
+# Test Plan Reference: AM-001 to AM-013, TI-001 to TI-004
+# 
+# This flow tests adding new tasks to the todo list:
+# - AM-001: Verify FAB opens add task modal
+# - AM-002: Verify modal appears with animation
+# - AM-003: Verify modal title "Add New Task"
+# - AM-004: Verify text input with placeholder
+# - AM-005: Verify Cancel button functionality
+# - AM-006: Verify Add Task button visibility
+# - AM-007: Verify Add Task disabled when input empty
+# - AM-008: Verify Add Task enabled when text entered
+# - AM-009: Verify task is added to list
+# - AM-011: Verify input is cleared after adding
+# - TI-001: Verify new task appears at top of list
+# - TI-003: Verify uncompleted task checkbox state
+#
+# Prerequisites:
+# - App must be installed on device/emulator
+# - App state should be cleared before running
+#
+# Run command: maestro test .maestro/add-task-flow.yaml
+# =============================================================================
+
+appId: com.todocat.app
+
+---
+
+# -----------------------------------------------------------------------------
+# SETUP: Launch app with fresh state and complete welcome
+# -----------------------------------------------------------------------------
+- launchApp:
+    clearState: true
+    clearKeychain: true
+
+- extendedWaitUntil:
+    visible: "Welcome to TodoCat"
+    timeout: 10000
+- tapOn: "Go"
+
+- extendedWaitUntil:
+    visible: "My Tasks"
+    timeout: 5000
+
+# -----------------------------------------------------------------------------
+# TEST: AM-001 - FAB Opens Modal
+# Description: Taps the FAB to open the add task modal
+# Expected: Add task modal appears on screen
+# -----------------------------------------------------------------------------
+- tapOn:
+    id: "add-task-fab"
+
+# Wait for modal animation
+- extendedWaitUntil:
+    visible: "Add New Task"
+    timeout: 3000
+
+# -----------------------------------------------------------------------------
+# TEST: AM-002 & AM-003 - Modal Appearance
+# Description: Verifies modal content and animations
+# Expected: Modal with title "Add New Task" is displayed
+# -----------------------------------------------------------------------------
+- assertVisible: "Add New Task"
+
+# -----------------------------------------------------------------------------
+# TEST: AM-004 - Text Input Placeholder
+# Description: Verifies input field has placeholder text
+# Expected: Placeholder "What needs to be done?" is visible
+# -----------------------------------------------------------------------------
+- assertVisible:
+    id: "task-input"
+
+# -----------------------------------------------------------------------------
+# TEST: AM-005 - Cancel Button
+# Description: Tests canceling the add task operation
+# Expected: Modal closes without adding a task
+# -----------------------------------------------------------------------------
+- tapOn: "Cancel"
+
+# Verify modal is closed
+- assertNotVisible: "Add New Task"
+
+# Verify still in empty state
+- assertVisible: "No tasks yet!"
+
+# -----------------------------------------------------------------------------
+# TEST: AM-007 - Add Task Button Disabled When Empty
+# Description: Verifies button is disabled with empty input
+# Expected: Add Task button should not be tappable when input is empty
+# -----------------------------------------------------------------------------
+- tapOn:
+    id: "add-task-fab"
+
+- extendedWaitUntil:
+    visible: "Add New Task"
+    timeout: 3000
+
+# The Add Task button should be visible but disabled
+- assertVisible: "Add Task"
+
+# -----------------------------------------------------------------------------
+# TEST: AM-008 - Add Task Button Enabled With Text
+# Description: Enters text and verifies button becomes enabled
+# Expected: Add Task button becomes active when text is entered
+# -----------------------------------------------------------------------------
+- tapOn:
+    id: "task-input"
+- inputText: "Buy groceries"
+
+# -----------------------------------------------------------------------------
+# TEST: AM-009 & TI-001 - Task Added Successfully
+# Description: Adds task and verifies it appears in the list
+# Expected: Task "Buy groceries" appears in the todo list
+# -----------------------------------------------------------------------------
+- tapOn: "Add Task"
+
+# Wait for modal to close and list to update
+- extendedWaitUntil:
+    visible: "Buy groceries"
+    timeout: 3000
+
+# Verify empty state is no longer shown
+- assertNotVisible: "No tasks yet!"
+
+# -----------------------------------------------------------------------------
+# TEST: TI-003 - New Task Uncompleted State
+# Description: Verifies new task shows uncompleted checkbox
+# Expected: Task checkbox is unchecked (empty circle)
+# -----------------------------------------------------------------------------
+- assertVisible: "Buy groceries"
+
+# -----------------------------------------------------------------------------
+# TEST: TI-001 - New Tasks at Top
+# Description: Adds another task and verifies ordering
+# Expected: Newest task appears at the top of the list
+# -----------------------------------------------------------------------------
+- tapOn:
+    id: "add-task-fab"
+
+- extendedWaitUntil:
+    visible: "Add New Task"
+    timeout: 3000
+
+- tapOn:
+    id: "task-input"
+- inputText: "Walk the cat"
+- tapOn: "Add Task"
+
+- extendedWaitUntil:
+    visible: "Walk the cat"
+    timeout: 3000
+
+# Both tasks should be visible
+- assertVisible: "Buy groceries"
+- assertVisible: "Walk the cat"

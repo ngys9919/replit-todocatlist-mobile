@@ -1,0 +1,71 @@
+# =============================================================================
+# Home Screen Empty State E2E Test Flow
+# =============================================================================
+# 
+# Test Plan Reference: HS-001 to HS-009
+# 
+# This flow tests the Home Screen empty state functionality:
+# - HS-001: Verify Home screen layout
+# - HS-002: Verify empty state message when no tasks exist
+# - HS-003: Verify FAB (Floating Action Button) is visible
+# - HS-004: Verify header displays app name
+#
+# Prerequisites:
+# - App must be installed on device/emulator
+# - App state should be cleared before running
+#
+# Run command: maestro test .maestro/home-empty-state-flow.yaml
+# =============================================================================
+
+appId: com.todocat.app
+
+---
+
+# -----------------------------------------------------------------------------
+# SETUP: Launch app with fresh state
+# Description: Clears all app data and navigates past welcome screen
+# -----------------------------------------------------------------------------
+- launchApp:
+    clearState: true
+    clearKeychain: true
+
+# Complete first launch flow
+- extendedWaitUntil:
+    visible: "Welcome to TodoCat"
+    timeout: 10000
+- tapOn: "Go"
+
+# Wait for Home screen
+- extendedWaitUntil:
+    visible: "My Tasks"
+    timeout: 5000
+
+# -----------------------------------------------------------------------------
+# TEST: HS-001 - Home Screen Layout
+# Description: Verifies the basic layout elements are present
+# Expected: Header shows "My Tasks" title, content area, and FAB are visible
+# -----------------------------------------------------------------------------
+- assertVisible: "My Tasks"
+
+# -----------------------------------------------------------------------------
+# TEST: HS-002 - Empty State Message
+# Description: Verifies empty state is shown when no tasks exist
+# Expected: "No tasks yet!" message and hint text are displayed
+# -----------------------------------------------------------------------------
+- assertVisible: "No tasks yet!"
+- assertVisible: "Tap + to add one"
+
+# -----------------------------------------------------------------------------
+# TEST: HS-003 - FAB Visibility
+# Description: Verifies the Floating Action Button for adding tasks is visible
+# Expected: FAB with "+" icon is displayed in the corner
+# -----------------------------------------------------------------------------
+- assertVisible:
+    id: "add-task-fab"
+
+# -----------------------------------------------------------------------------
+# TEST: HS-004 - Header Title
+# Description: Verifies the header title is displayed correctly
+# Expected: "My Tasks" text is visible in the header area
+# -----------------------------------------------------------------------------
+- assertVisible: "My Tasks"

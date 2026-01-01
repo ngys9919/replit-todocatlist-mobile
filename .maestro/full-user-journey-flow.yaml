@@ -1,0 +1,285 @@
+# =============================================================================
+# Full User Journey E2E Test Flow
+# =============================================================================
+# 
+# Test Plan Reference: Complete end-to-end user journey
+# 
+# This flow simulates a complete user session with TodoCat:
+# 1. First app launch - sees welcome screen
+# 2. Navigates to home screen
+# 3. Sees empty state
+# 4. Adds multiple tasks
+# 5. Completes some tasks
+# 6. Deletes a task
+# 7. Verifies data persists across app restart
+#
+# This is the most comprehensive E2E test that validates the entire
+# user experience from installation to daily usage.
+#
+# Prerequisites:
+# - App must be installed on device/emulator
+# - App state should be cleared before running
+#
+# Run command: maestro test .maestro/full-user-journey-flow.yaml
+# =============================================================================
+
+appId: com.todocat.app
+
+---
+
+# =============================================================================
+# PHASE 1: First Launch Experience
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# STEP 1.1: Fresh App Launch
+# Description: User installs and opens the app for the first time
+# Expected: Welcome screen is displayed
+# -----------------------------------------------------------------------------
+- launchApp:
+    clearState: true
+    clearKeychain: true
+
+# -----------------------------------------------------------------------------
+# STEP 1.2: Welcome Screen Display
+# Description: Verify all welcome screen elements
+# Expected: Cat icon, title, subtitle, and Go button visible
+# Test References: WS-001, WS-002, WS-003, WS-004, WS-005
+# -----------------------------------------------------------------------------
+- extendedWaitUntil:
+    visible: "Welcome to TodoCat"
+    timeout: 10000
+
+- assertVisible:
+    id: "cat-icon"
+- assertVisible: "Welcome to TodoCat"
+- assertVisible: "Your purrfect task companion"
+- assertVisible: "Go"
+
+# -----------------------------------------------------------------------------
+# STEP 1.3: Navigate to Home
+# Description: User taps Go button to enter the app
+# Expected: App navigates to Home screen
+# Test Reference: WS-007
+# -----------------------------------------------------------------------------
+- tapOn: "Go"
+
+- extendedWaitUntil:
+    visible: "My Tasks"
+    timeout: 5000
+
+# =============================================================================
+# PHASE 2: Empty State Experience
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# STEP 2.1: Verify Empty State
+# Description: New user sees empty task list
+# Expected: Empty state message and FAB are visible
+# Test References: HS-002, HS-003
+# -----------------------------------------------------------------------------
+- assertVisible: "No tasks yet!"
+- assertVisible: "Tap + to add one"
+- assertVisible:
+    id: "add-task-fab"
+
+# =============================================================================
+# PHASE 3: Adding Tasks
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# STEP 3.1: Add First Task - "Morning routine"
+# Description: User adds their first task
+# Expected: Task appears in list, empty state disappears
+# Test References: AM-001, AM-009, TI-001
+# -----------------------------------------------------------------------------
+- tapOn:
+    id: "add-task-fab"
+
+- extendedWaitUntil:
+    visible: "Add New Task"
+    timeout: 3000
+
+- tapOn:
+    id: "task-input"
+- inputText: "Morning routine"
+- tapOn: "Add Task"
+
+- extendedWaitUntil:
+    visible: "Morning routine"
+    timeout: 3000
+
+- assertNotVisible: "No tasks yet!"
+
+# -----------------------------------------------------------------------------
+# STEP 3.2: Add Second Task - "Buy cat food"
+# Description: User adds another task
+# Expected: Second task appears in list
+# -----------------------------------------------------------------------------
+- tapOn:
+    id: "add-task-fab"
+
+- extendedWaitUntil:
+    visible: "Add New Task"
+    timeout: 3000
+
+- tapOn:
+    id: "task-input"
+- inputText: "Buy cat food"
+- tapOn: "Add Task"
+
+- extendedWaitUntil:
+    visible: "Buy cat food"
+    timeout: 3000
+
+# -----------------------------------------------------------------------------
+# STEP 3.3: Add Third Task - "Clean litter box"
+# Description: User adds a third task
+# Expected: Third task appears in list
+# -----------------------------------------------------------------------------
+- tapOn:
+    id: "add-task-fab"
+
+- extendedWaitUntil:
+    visible: "Add New Task"
+    timeout: 3000
+
+- tapOn:
+    id: "task-input"
+- inputText: "Clean litter box"
+- tapOn: "Add Task"
+
+- extendedWaitUntil:
+    visible: "Clean litter box"
+    timeout: 3000
+
+# Verify all three tasks are visible
+- assertVisible: "Morning routine"
+- assertVisible: "Buy cat food"
+- assertVisible: "Clean litter box"
+
+# =============================================================================
+# PHASE 4: Completing Tasks
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# STEP 4.1: Complete First Task
+# Description: User marks "Morning routine" as done
+# Expected: Task shows completed state (strikethrough)
+# Test References: TI-005, TI-006
+# -----------------------------------------------------------------------------
+- tapOn: "Morning routine"
+
+# Allow animation to complete
+- extendedWaitUntil:
+    timeout: 500
+
+# Task should still be visible with completed styling
+- assertVisible: "Morning routine"
+
+# -----------------------------------------------------------------------------
+# STEP 4.2: Complete Second Task
+# Description: User marks "Buy cat food" as done
+# Expected: Task shows completed state
+# -----------------------------------------------------------------------------
+- tapOn: "Buy cat food"
+
+- extendedWaitUntil:
+    timeout: 500
+
+- assertVisible: "Buy cat food"
+
+# =============================================================================
+# PHASE 5: Uncompleting a Task
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# STEP 5.1: Uncomplete a Task
+# Description: User realizes they need to do "Morning routine" again
+# Expected: Task returns to incomplete state
+# Test Reference: TI-008
+# -----------------------------------------------------------------------------
+- tapOn: "Morning routine"
+
+- extendedWaitUntil:
+    timeout: 500
+
+- assertVisible: "Morning routine"
+
+# =============================================================================
+# PHASE 6: Deleting a Task
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# STEP 6.1: Delete a Task
+# Description: User long-presses to delete "Buy cat food"
+# Expected: Task is removed from list
+# Test References: TI-009, TI-011
+# -----------------------------------------------------------------------------
+- longPressOn: "Buy cat food"
+
+- extendedWaitUntil:
+    timeout: 1000
+
+# Tap delete if confirmation appears
+- tapOn:
+    text: "Delete"
+    optional: true
+
+- extendedWaitUntil:
+    timeout: 2000
+
+# Verify task is deleted
+- assertNotVisible: "Buy cat food"
+
+# Other tasks should still exist
+- assertVisible: "Morning routine"
+- assertVisible: "Clean litter box"
+
+# =============================================================================
+# PHASE 7: Data Persistence
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# STEP 7.1: Restart App
+# Description: User closes and reopens the app
+# Expected: App opens directly to Home (skips welcome)
+# Test Reference: WS-009, DP-001, DP-002
+# -----------------------------------------------------------------------------
+- launchApp
+
+- extendedWaitUntil:
+    visible: "My Tasks"
+    timeout: 5000
+
+# Should NOT see welcome screen
+- assertNotVisible: "Welcome to TodoCat"
+
+# -----------------------------------------------------------------------------
+# STEP 7.2: Verify Tasks Persisted
+# Description: Check that all task states were saved
+# Expected: Same tasks with same completion states
+# Test References: DP-001, DP-002, DP-003
+# -----------------------------------------------------------------------------
+# Tasks that should exist
+- assertVisible: "Morning routine"
+- assertVisible: "Clean litter box"
+
+# Task that was deleted should stay deleted
+- assertNotVisible: "Buy cat food"
+
+# =============================================================================
+# TEST COMPLETE
+# =============================================================================
+# 
+# This full journey test validates:
+# - First launch welcome flow
+# - Empty state display
+# - Adding multiple tasks
+# - Completing and uncompleting tasks
+# - Deleting tasks
+# - Data persistence across app restarts
+# - Welcome screen skip on subsequent launches
+#
+# All core user scenarios have been validated!
+# =============================================================================

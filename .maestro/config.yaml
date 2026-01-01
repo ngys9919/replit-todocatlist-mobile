@@ -1,0 +1,23 @@
+# =============================================================================
+# Maestro Configuration for TodoCat
+# =============================================================================
+# 
+# This file contains global configuration and environment variables
+# for all Maestro E2E test flows in the TodoCat application.
+#
+# Usage: maestro test .maestro/
+# =============================================================================
+
+# Application identifiers (same for iOS and Android)
+appId: com.todocat.app
+
+# Global test settings
+env:
+  # Test data constants
+  TEST_TASK_1: "Buy groceries"
+  TEST_TASK_2: "Walk the cat"
+  TEST_TASK_3: "Read a book"
+  
+  # Timeouts (in milliseconds)
+  DEFAULT_TIMEOUT: 5000
+  ANIMATION_TIMEOUT: 1000

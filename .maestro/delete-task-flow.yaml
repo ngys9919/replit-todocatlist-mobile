@@ -1,0 +1,142 @@
+# =============================================================================
+# Delete Task E2E Test Flow
+# =============================================================================
+# 
+# Test Plan Reference: TI-009 to TI-013
+# 
+# This flow tests deleting tasks from the todo list:
+# - TI-009: Verify long press shows delete option
+# - TI-010: Verify delete confirmation (if applicable)
+# - TI-011: Verify task is removed from list
+# - TI-012: Verify empty state returns when all tasks deleted
+# - TI-013: Verify delete is persisted
+#
+# Prerequisites:
+# - App must be installed on device/emulator
+# - App state should be cleared before running
+#
+# Run command: maestro test .maestro/delete-task-flow.yaml
+# =============================================================================
+
+appId: com.todocat.app
+
+---
+
+# -----------------------------------------------------------------------------
+# SETUP: Launch app and add test tasks
+# -----------------------------------------------------------------------------
+- launchApp:
+    clearState: true
+    clearKeychain: true
+
+# Complete welcome flow
+- extendedWaitUntil:
+    visible: "Welcome to TodoCat"
+    timeout: 10000
+- tapOn: "Go"
+
+- extendedWaitUntil:
+    visible: "My Tasks"
+    timeout: 5000
+
+# Add first task
+- tapOn:
+    id: "add-task-fab"
+- extendedWaitUntil:
+    visible: "Add New Task"
+    timeout: 3000
+- tapOn:
+    id: "task-input"
+- inputText: "Task to keep"
+- tapOn: "Add Task"
+
+- extendedWaitUntil:
+    visible: "Task to keep"
+    timeout: 3000
+
+# Add second task that will be deleted
+- tapOn:
+    id: "add-task-fab"
+- extendedWaitUntil:
+    visible: "Add New Task"
+    timeout: 3000
+- tapOn:
+    id: "task-input"
+- inputText: "Task to delete"
+- tapOn: "Add Task"
+
+- extendedWaitUntil:
+    visible: "Task to delete"
+    timeout: 3000
+
+# Verify both tasks exist
+- assertVisible: "Task to keep"
+- assertVisible: "Task to delete"
+
+# -----------------------------------------------------------------------------
+# TEST: TI-009 - Delete Button/Action
+# Description: Tests the delete functionality on a task
+# Expected: Delete UI element becomes accessible
+# Note: The app may use swipe-to-delete or a delete button
+# -----------------------------------------------------------------------------
+# Look for delete button on the task item
+# This depends on the UI implementation - could be swipe or button
+- longPressOn: "Task to delete"
+
+# -----------------------------------------------------------------------------
+# TEST: TI-010 & TI-011 - Task Deletion
+# Description: Confirms deletion and verifies task is removed
+# Expected: "Task to delete" is no longer in the list
+# -----------------------------------------------------------------------------
+# Wait for any confirmation dialog or animation
+- extendedWaitUntil:
+    timeout: 2000
+
+# If there's a delete confirmation button, tap it
+- tapOn:
+    text: "Delete"
+    optional: true
+
+# Wait for deletion animation
+- extendedWaitUntil:
+    timeout: 2000
+
+# Verify task is removed
+- assertNotVisible: "Task to delete"
+
+# Verify other task is still present
+- assertVisible: "Task to keep"
+
+# -----------------------------------------------------------------------------
+# TEST: TI-012 - Delete All Returns Empty State
+# Description: Deletes remaining task to verify empty state returns
+# Expected: Empty state message appears when all tasks deleted
+# -----------------------------------------------------------------------------
+- longPressOn: "Task to keep"
+
+- extendedWaitUntil:
+    timeout: 2000
+
+- tapOn:
+    text: "Delete"
+    optional: true
+
+- extendedWaitUntil:
+    timeout: 2000
+
+# Verify empty state is shown
+- assertVisible: "No tasks yet!"
+
+# -----------------------------------------------------------------------------
+# TEST: TI-013 - Delete Persistence
+# Description: Verifies deletion persists across app restarts
+# Expected: Deleted tasks remain deleted after app restart
+# -----------------------------------------------------------------------------
+- launchApp
+
+- extendedWaitUntil:
+    visible: "My Tasks"
+    timeout: 5000
+
+# Empty state should still be shown
+- assertVisible: "No tasks yet!"

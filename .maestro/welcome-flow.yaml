@@ -1,0 +1,102 @@
+# =============================================================================
+# Welcome Screen E2E Test Flow
+# =============================================================================
+# 
+# Test Plan Reference: WS-001 to WS-010
+# 
+# This flow tests the Welcome Screen functionality on first app launch:
+# - WS-001: Verify welcome screen displays on first launch
+# - WS-002: Verify cat face icon is visible
+# - WS-003: Verify welcome title "Welcome to TodoCat" is displayed
+# - WS-004: Verify subtitle "Your purrfect task companion" is displayed
+# - WS-005: Verify "Go" button is visible
+# - WS-007: Verify tapping "Go" navigates to Home screen
+# - WS-008: Verify first launch flag is saved (subsequent launches skip welcome)
+#
+# Prerequisites:
+# - App must be installed on device/emulator
+# - App state should be cleared before running
+#
+# Run command: maestro test .maestro/welcome-flow.yaml
+# =============================================================================
+
+appId: com.todocat.app
+
+---
+
+# -----------------------------------------------------------------------------
+# TEST: WS-001 - Welcome Screen First Launch
+# Description: Clears app state and launches to verify welcome screen appears
+# Expected: Welcome screen is displayed on first app launch
+# -----------------------------------------------------------------------------
+- launchApp:
+    clearState: true
+    clearKeychain: true
+
+# Allow splash screen animation to complete
+- extendedWaitUntil:
+    visible: "Welcome to TodoCat"
+    timeout: 10000
+
+# -----------------------------------------------------------------------------
+# TEST: WS-002 - Cat Face Icon Visibility
+# Description: Verifies the cat face mascot icon is displayed
+# Expected: Cat face icon element is visible on screen (160x160px, rounded corners)
+# -----------------------------------------------------------------------------
+- assertVisible:
+    id: "cat-icon"
+
+# -----------------------------------------------------------------------------
+# TEST: WS-003 - Welcome Title Display
+# Description: Verifies the welcome title text is shown
+# Expected: "Welcome to TodoCat" text is visible
+# -----------------------------------------------------------------------------
+- assertVisible: "Welcome to TodoCat"
+
+# -----------------------------------------------------------------------------
+# TEST: WS-004 - Subtitle Display
+# Description: Verifies the subtitle/tagline text is shown
+# Expected: "Your purrfect task companion" text is visible
+# -----------------------------------------------------------------------------
+- assertVisible: "Your purrfect task companion"
+
+# -----------------------------------------------------------------------------
+# TEST: WS-005 - Go Button Visibility
+# Description: Verifies the primary action button is displayed
+# Expected: "Go" button is visible and ready for interaction
+# -----------------------------------------------------------------------------
+- assertVisible: "Go"
+
+# -----------------------------------------------------------------------------
+# TEST: WS-007 - Go Button Navigation
+# Description: Taps the Go button and verifies navigation to Home screen
+# Expected: App navigates to Home screen showing task list UI
+# -----------------------------------------------------------------------------
+- tapOn: "Go"
+
+# Wait for navigation animation
+- extendedWaitUntil:
+    visible: "My Tasks"
+    timeout: 5000
+
+# Verify we're on the Home screen (FAB should be visible)
+- assertVisible:
+    id: "add-task-fab"
+
+# -----------------------------------------------------------------------------
+# TEST: WS-008 - First Launch Flag Persistence
+# Description: Verifies welcome screen is skipped on subsequent launches
+# Expected: App opens directly to Home screen on relaunch
+# -----------------------------------------------------------------------------
+# Relaunch without clearing state
+- launchApp
+
+# Should go directly to Home screen, not Welcome
+- extendedWaitUntil:
+    visible: "My Tasks"
+    timeout: 5000
+
+# Verify we're on Home screen, not Welcome screen
+- assertNotVisible: "Welcome to TodoCat"
+- assertVisible:
+    id: "add-task-fab"
